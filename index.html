@@ -1434,15 +1434,35 @@ async function connectWithWalletConnect() {
         description: 'Peer-to-peer crypto escrow challenges',
         url: window.location.origin,
         icons: [window.location.origin + '/favicon.png'],
-    },
-  });
+      },
+    });
 
-  // 👉 this is the missing piece
-  await wcProvider.connect();
+    await wcProvider.connect();
 
-  // Wrap with ethers v6
-  provider = new ethers.BrowserProvider(wcProvider);
-  signer   = await provider.getSigner();
+    // 🔒 Safety: verify wallet network matches app network
+    const walletChainHex = await wcProvider.request({ method: 'eth_chainId' });
+    const expectedHex = chainId === 8453 ? '0x2105' : '0x14a33'; // 8453 / 84532 in hex
+
+    if (walletChainHex !== expectedHex) {
+      alert(
+        `Wallet is on the wrong network.\n\n` +
+        `Wallet: chainId ${walletChainHex}\n` +
+        `App expects: ${chainId === 8453 ? 'Base Mainnet (8453)' : 'Base Sepolia (84532)'}.\n\n` +
+        `Switch networks in your wallet and reconnect.`
+      );
+
+      $('sbState').textContent = 'Wrong network (WalletConnect)';
+      $('sbState').classList.remove('ok');
+      $('btnConnect').classList.remove('connected');
+
+      // Do NOT set provider/signer – refuse to use this session
+      wcProvider = null;
+      return;
+    }
+
+    // Wrap with ethers v6
+    provider = new ethers.BrowserProvider(wcProvider);
+    signer   = await provider.getSigner();
 
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
