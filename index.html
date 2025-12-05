@@ -1406,19 +1406,28 @@ async function connectWithWalletConnect() {
     const net = currentBase();              // mainnet or testnet
     const chainId = net.key === 'mainnet' ? 8453 : 84532;
 
-    // This is what the UMD build attaches
-    const EthereumProvider = window.WalletConnectEthereumProvider;
+    // UMD build exposes a module object under "@walletconnect/ethereum-provider"
+    const globalWC =
+      window['@walletconnect/ethereum-provider'] ||
+      window.WalletConnectEthereumProvider ||
+      window.EthereumProvider ||
+      window.ethereumProvider;
+
+    const EthereumProvider =
+      globalWC?.EthereumProvider ||
+      globalWC?.default ||
+      globalWC;
 
     if (!EthereumProvider || !EthereumProvider.init) {
-      console.error('WalletConnectEthereumProvider global missing:', EthereumProvider);
-      alert('WalletConnect library failed to load. Check the <script> src in <head>.');
+      console.error('WalletConnect global missing or invalid:', globalWC);
+      alert('WalletConnect library failed to load. Check the <script> tag in <head>.');
       return;
     }
 
     // Initialize WalletConnect v2
     wcProvider = await EthereumProvider.init({
       projectId: WC_PROJECT_ID,
-      chains: [chainId],          // MUST pass `chains`
+      chains: [chainId],
       showQrModal: true,
       metadata: {
         name: 'The Juice',
@@ -1435,8 +1444,6 @@ async function connectWithWalletConnect() {
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
-
-    applyNetworkUI();
   } catch (e) {
     console.error('WalletConnect failed', e);
     $('sbState').textContent = 'WalletConnect failed or canceled';
