@@ -1404,37 +1404,40 @@ async function connectWithWalletConnect() {
     }
 
     const net = currentBase(); // mainnet or testnet
+    const chainId = net.key === 'mainnet' ? 8453 : 84532;
 
-    // Figure out where the UMD build attached itself
-    const wcNamespace1 = window['@walletconnect/ethereum-provider'];
-    const wcNamespace2 = window.WalletConnectEthereumProvider;
+    // Try several possible globals from the UMD build
+    const cand1 = window.WalletConnectEthereumProvider;
+    const cand2 = cand1 && (cand1.default || cand1.EthereumProvider || cand1);
+    const cand3 = window.WalletConnectProvider;
+    const cand4 = cand3 && (cand3.default || cand3.EthereumProvider || cand3);
+    const cand5 = window['@walletconnect/ethereum-provider'];
+    const cand6 = cand5 && (cand5.default || cand5.EthereumProvider || cand5);
 
     const EthereumProvider =
-      (wcNamespace1 && wcNamespace1.EthereumProvider) ||
-      (wcNamespace2 && wcNamespace2.EthereumProvider) ||
-      wcNamespace2; // fallback if the class itself is exported
+      (cand2 && cand2.init ? cand2 :
+      (cand4 && cand4.init ? cand4 :
+      (cand6 && cand6.init ? cand6 : null)));
 
     if (!EthereumProvider || !EthereumProvider.init) {
       console.error('WalletConnect EthereumProvider global not found', {
-        wcNamespace1,
-        wcNamespace2,
+        cand1, cand2, cand3, cand4, cand5, cand6
       });
       alert('WalletConnect library failed to load. Check the <script> tag in <head>.');
       return;
     }
 
-    // Actually initialize WC v2
+    // Initialize WC v2 (note: MUST pass `chains`, not only `optionalChains`)
     wcProvider = await EthereumProvider.init({
       projectId: WC_PROJECT_ID,
+      chains: [chainId],
+      showQrModal: true,
       metadata: {
         name: 'The Juice',
         description: 'Peer-to-peer crypto escrow challenges',
         url: window.location.origin,
         icons: [window.location.origin + '/favicon.png'],
-      },
-      // keep it simple: just tell it which chain you care about
-      optionalChains: [net.label.includes('8453') ? 8453 : 84532],
-      showQrModal: true,
+      }
     });
 
     // Wrap with ethers v6
