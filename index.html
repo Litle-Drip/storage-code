@@ -14,12 +14,15 @@
       --text:#f4f4f5;
       --muted:#a1a1aa;
       --border:#27272f;
-      --accent:#18DCF1;
-      --accent-ink:#052e16;
+      --accent: #00eaff;
+      --accent-ink: #001014;
+      --glow: 0 0 12px rgba(0,234,255,0.65);
       --danger:#ef4444;
       --chip:#111114;
       --radius:18px;
       --fs:16px;
+      --accent: #00eaff;
+      --accent-ink: #001014;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -668,7 +671,7 @@
     min-width:90px;
   }
 }
-   /* Hide title + subtitle only on the Create Bet panel */
+   /* Hide title + subtitle only on the Create Challenge panel */
 #panelCreate .card-header,
 #panelCreate .card-sub{
   display:none;
@@ -868,7 +871,7 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button id="tabCreate" class="tab active">Create Bet</button>
+    <button id="tabCreate" class="tab active">Create Challenge</button>
     <button id="tabJoin" class="tab">Join &amp; Resolve</button>
   </div>
 
@@ -880,10 +883,10 @@
   <div id="panelCreate" class="panel active">
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Create Bet</div>
+        <div class="card-title">Create Challenge</div>
       </div>
 
-      <div class="card-sub">Set the bet, deadlines, and fund the escrow in one step.</div>
+      <div class="card-sub">Set the Challenge, deadlines, and fund the escrow in one step.</div>
 
             <!-- Idea text bar with inline dice button -->
       <div class="idea-row">
@@ -969,9 +972,9 @@
       <div class="card-header">
         <div class="card-title" style="display:none;margin:0;padding:0;"></div>
       </div>
-      <div id="resolveNote" class="card-sub">Paste a bet ID to join, refund, or finalize.</div>
+      <div id="resolveNote" class="card-sub">Paste a Challegne ID to join, refund, or finalize.</div>
 
-      <!-- Bet ID -->
+      <!-- Challenge ID -->
       <div class="join-input-row row">
         <input id="betId" class="input join-input" placeholder="Paste bet ID…" />
         <button id="btnClearId" class="btn-clear">Clear</button>
@@ -979,7 +982,7 @@
 
       <!-- Join / refund -->
       <div class="stack" style="margin-top:8px">
-        <button id="btnJoin" class="btn primary" style="width:100%">Join Bet</button>
+        <button id="btnJoin" class="btn primary" style="width:100%">Join Challenge</button>
         <button id="btnRefund" class="btn ghost" style="width:100%">Request Refund</button>
       </div>
 
@@ -990,14 +993,14 @@
 
         <div class="vote-grid">
           <div>
-            <div class="vote-column-title">I created this bet</div>
+            <div class="vote-column-title">I created this Challenge</div>
             <div class="vote-buttons">
               <button id="creatorWon" class="btn ghost">I Won</button>
               <button id="creatorSaysOpponent" class="btn ghost">Opponent Won</button>
             </div>
           </div>
           <div>
-            <div class="vote-column-title">I joined this bet</div>
+            <div class="vote-column-title">I joined this Challenge</div>
             <div class="vote-buttons">
               <button id="opponentSaysCreator" class="btn ghost">Creator Won</button>
               <button id="opponentWon" class="btn ghost">I Won</button>
@@ -1011,14 +1014,14 @@
       </div>
 
       <div id="actionStatus" class="status"></div>
-      <div id="newBetNote" class="status" style="text-align:center;display:none">🆕 New bet link prepared — share the QR!
+      <div id="newBetNote" class="status" style="text-align:center;display:none">🆕 New Challenge link prepared — share the QR!
       </div>
     </div>
     
     <!-- Share / QR -->
     <div class="share-card">
       <div class="share-title">Share link &amp; QR</div>
-      <div class="share-help">Send this link or QR to your opponent so they open the exact bet.</div>
+      <div class="share-help">Send this link or QR to your opponent so they open the exact Challenge</div>
 
       <div class="qr-row">
         <div class="row wrap" style="flex:1; min-width:260px">
@@ -1443,7 +1446,7 @@ async function doCreate(){
     renderQR();
     $('newBetNote').style.display = 'block';
 
-    // Auto-switch to Join & Resolve tab after bet is created
+    // Auto-switch to Join & Resolve tab after Challenge is created
     const tabJoin = $('tabJoin');
     if (tabJoin) tabJoin.click();
   }catch(e){
@@ -1629,7 +1632,7 @@ const IDEAS = [
   "Hockey: Hit the crossbar",
   "Lacrosse: Top right corner",
   "Human: No way!",
-  "Human: I bet you can't",
+  "Human: I challenge you can't",
   "Cornhole: 2 in a row",
   "Bottle Flip: 3 out of 5",
   "Soccer: Crossbar in 3 tries",
@@ -1652,7 +1655,7 @@ function shuffleIdea(){
   $('ideaBox').value = IDEAS[Math.floor(Math.random()*IDEAS.length)];
 }
 
-/* ---------- New bet link ---------- */
+/* ---------- New challenge link ---------- */
 function startNewBet(){
   $('betId').value = '';
 
@@ -1739,7 +1742,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
   };
 
-  // Connect / switch / new bet
+  // Connect / switch / new challenge
   $('btnConnect').onclick = connect;
   $('btnSwitch').onclick = async ()=>{
     try{
@@ -1775,7 +1778,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Shuffle ideas
   $('btnShuffle').onclick = shuffleIdea;
 
-  // Clear bet ID button
+  // Clear challenge ID button
   $('btnClearId').onclick = ()=>{
     startNewBet();
     $('betId').value = '';
