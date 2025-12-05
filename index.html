@@ -1399,28 +1399,48 @@ async function connect(){
 async function connectWithWalletConnect() {
   try {
     if (!WC_PROJECT_ID || WC_PROJECT_ID === 'YOUR_PROJECT_ID_HERE') {
-      alert('Add your WalletConnect project ID in the code (WC_PROJECT_ID) before using this.');
+      alert('Add your WalletConnect project ID in WC_PROJECT_ID before using this.');
       return;
     }
 
-    const net = currentBase(); // uses CURRENT_NETWORK (mainnet/testnet)
+    const net = currentBase(); // mainnet or testnet
 
-    // 1) Init WalletConnect v2 provider (shows QR code)
-    wcProvider = await window.WalletConnectEthereumProvider.init({
+    // Figure out where the UMD build attached itself
+    const wcNamespace1 = window['@walletconnect/ethereum-provider'];
+    const wcNamespace2 = window.WalletConnectEthereumProvider;
+
+    const EthereumProvider =
+      (wcNamespace1 && wcNamespace1.EthereumProvider) ||
+      (wcNamespace2 && wcNamespace2.EthereumProvider) ||
+      wcNamespace2; // fallback if the class itself is exported
+
+    if (!EthereumProvider || !EthereumProvider.init) {
+      console.error('WalletConnect EthereumProvider global not found', {
+        wcNamespace1,
+        wcNamespace2,
+      });
+      alert('WalletConnect library failed to load. Check the <script> tag in <head>.');
+      return;
+    }
+
+    // Actually initialize WC v2
+    wcProvider = await EthereumProvider.init({
       projectId: WC_PROJECT_ID,
-      chains: [net.label.includes('8453') ? 8453 : 84532],
-      optionalChains: [8453, 84532],
-      showQrModal: true
+      metadata: {
+        name: 'The Juice',
+        description: 'Peer-to-peer crypto escrow challenges',
+        url: window.location.origin,
+        icons: [window.location.origin + '/favicon.png'],
+      },
+      // keep it simple: just tell it which chain you care about
+      optionalChains: [net.label.includes('8453') ? 8453 : 84532],
+      showQrModal: true,
     });
 
-    // 2) Wait for user to connect
-    await wcProvider.connect();
-
-    // 3) Wrap WalletConnect provider with ethers v6
+    // Wrap with ethers v6
     provider = new ethers.BrowserProvider(wcProvider);
     signer   = await provider.getSigner();
 
-    // 4) Update UI same way as normal connect()
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
