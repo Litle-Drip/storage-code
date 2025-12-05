@@ -1434,12 +1434,15 @@ async function connectWithWalletConnect() {
         description: 'Peer-to-peer crypto escrow challenges',
         url: window.location.origin,
         icons: [window.location.origin + '/favicon.png'],
-      },
-    });
+    },
+  });
 
-    // Wrap with ethers v6
-    provider = new ethers.BrowserProvider(wcProvider);
-    signer   = await provider.getSigner();
+  // 👉 this is the missing piece
+  await wcProvider.connect();
+
+  // Wrap with ethers v6
+  provider = new ethers.BrowserProvider(wcProvider);
+  signer   = await provider.getSigner();
 
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
