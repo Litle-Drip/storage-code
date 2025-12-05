@@ -714,7 +714,7 @@
   <!-- Libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2/dist/index.umd.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2/dist/umd/index.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -1403,41 +1403,29 @@ async function connectWithWalletConnect() {
       return;
     }
 
-    const net = currentBase(); // mainnet or testnet
+    const net = currentBase();              // mainnet or testnet
     const chainId = net.key === 'mainnet' ? 8453 : 84532;
 
-    // Try several possible globals from the UMD build
-    const cand1 = window.WalletConnectEthereumProvider;
-    const cand2 = cand1 && (cand1.default || cand1.EthereumProvider || cand1);
-    const cand3 = window.WalletConnectProvider;
-    const cand4 = cand3 && (cand3.default || cand3.EthereumProvider || cand3);
-    const cand5 = window['@walletconnect/ethereum-provider'];
-    const cand6 = cand5 && (cand5.default || cand5.EthereumProvider || cand5);
-
-    const EthereumProvider =
-      (cand2 && cand2.init ? cand2 :
-      (cand4 && cand4.init ? cand4 :
-      (cand6 && cand6.init ? cand6 : null)));
+    // This is what the UMD build attaches
+    const EthereumProvider = window.WalletConnectEthereumProvider;
 
     if (!EthereumProvider || !EthereumProvider.init) {
-      console.error('WalletConnect EthereumProvider global not found', {
-        cand1, cand2, cand3, cand4, cand5, cand6
-      });
-      alert('WalletConnect library failed to load. Check the <script> tag in <head>.');
+      console.error('WalletConnectEthereumProvider global missing:', EthereumProvider);
+      alert('WalletConnect library failed to load. Check the <script> src in <head>.');
       return;
     }
 
-    // Initialize WC v2 (note: MUST pass `chains`, not only `optionalChains`)
+    // Initialize WalletConnect v2
     wcProvider = await EthereumProvider.init({
       projectId: WC_PROJECT_ID,
-      chains: [chainId],
+      chains: [chainId],          // MUST pass `chains`
       showQrModal: true,
       metadata: {
         name: 'The Juice',
         description: 'Peer-to-peer crypto escrow challenges',
         url: window.location.origin,
         icons: [window.location.origin + '/favicon.png'],
-      }
+      },
     });
 
     // Wrap with ethers v6
