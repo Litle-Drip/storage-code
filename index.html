@@ -714,6 +714,7 @@
   <!-- Libs -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2/dist/index.umd.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -1319,6 +1320,8 @@ const ABI = [
 
 /* ---------- Wallet / ethers ---------- */
 let provider, signer;
+let wcProvider = null;  // WalletConnect session
+const WC_PROJECT_ID = 'YOUR_PROJECT_ID_HERE'; // <-- replace with your real ID later
 
 // Pick a real provider (handles Brave / multiple wallets)
 function getEth(){
@@ -1393,7 +1396,42 @@ async function connect(){
     $('sbState').classList.remove('ok');
   }
 }
+async function connectWithWalletConnect() {
+  try {
+    if (!WC_PROJECT_ID || WC_PROJECT_ID === 'YOUR_PROJECT_ID_HERE') {
+      alert('Add your WalletConnect project ID in the code (WC_PROJECT_ID) before using this.');
+      return;
+    }
 
+    const net = currentBase(); // uses CURRENT_NETWORK (mainnet/testnet)
+
+    // 1) Init WalletConnect v2 provider (shows QR code)
+    wcProvider = await window.WalletConnectEthereumProvider.init({
+      projectId: WC_PROJECT_ID,
+      chains: [net.label.includes('8453') ? 8453 : 84532],
+      optionalChains: [8453, 84532],
+      showQrModal: true
+    });
+
+    // 2) Wait for user to connect
+    await wcProvider.connect();
+
+    // 3) Wrap WalletConnect provider with ethers v6
+    provider = new ethers.BrowserProvider(wcProvider);
+    signer   = await provider.getSigner();
+
+    // 4) Update UI same way as normal connect()
+    $('sbState').textContent = 'Connected (WalletConnect)';
+    $('sbState').classList.add('ok');
+    $('btnConnect').classList.add('connected');
+
+    applyNetworkUI();
+  } catch (e) {
+    console.error('WalletConnect failed', e);
+    $('sbState').textContent = 'WalletConnect failed or canceled';
+    $('sbState').classList.remove('ok');
+  }
+}
 function getContract(){
   if (!signer) throw new Error('Connect your wallet first.');
   return new ethers.Contract(currentContract(), ABI, signer);
@@ -1622,7 +1660,8 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Initialize network pills & warning
   applyNetworkUI();
   const btnSwitch = $('btnSwitch'); if (btnSwitch) btnSwitch.onclick = toggleNetwork;
-  const btnWC = $('btnWalletConnect'); if (btnWC) btnWC.onclick = ()=> alert('WalletConnect support is coming soon. For now, use a browser wallet (MetaMask, Coinbase, Brave, etc.).');
+  const btnWC = $('btnWalletConnect'); if (btnWC) btnWC.onclick = connectWithWalletConnect;
+
 
   // stake defaults (start from ETH value, show USD)
   applyStakeFromEth(0.0014);
