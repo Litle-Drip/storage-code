@@ -874,12 +874,15 @@
 
       <!-- Summary footer -->
       <div class="summary-card">
-    <div class="summary-top">
-      <div id="sbState" class="state-pill">Not connected</div>
-      <div id="chipNetworkBottom" class="chip">Base • Mainnet • (8453)</div>
-    </div>
-
-    <div class="summary-row">
+        <div class="summary-top">
+          <div id="sbState" class="state-pill">Not connected</div>
+          <div id="chipNetworkBottom" class="chip">Base • Mainnet • (8453)</div>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Wallet network</span>
+          <span class="summary-value" id="sbWalletNet">Wallet: not connected</span>
+        </div>   
+        <div class="summary-row">
       <span class="summary-label">Pot if opponent joins</span>
       <span class="summary-value"><span id="sbPotEth">0.0028</span> ETH (<span id="sbPotUsd">$10.00</span>)</span>
     </div>
@@ -1058,7 +1061,34 @@ function applyNetworkUI(){
       : 'Use Base Mainnet';
   }
 }
+async function updateWalletNetworkLabel() {
+  const el = $('sbWalletNet');
+  if (!el) return;
 
+  if (!provider) {
+    el.textContent = 'Wallet: not connected';
+    return;
+  }
+
+  try {
+    const net = await provider.getNetwork(); // ethers v6 Network
+    const chainId = Number(net.chainId.toString());
+
+    let label;
+    if (chainId === 8453) {
+      label = 'Wallet: Base Mainnet (8453)';
+    } else if (chainId === 84532) {
+      label = 'Wallet: Base Sepolia (84532)';
+    } else {
+      label = `Wallet: chainId ${chainId}`;
+    }
+
+    el.textContent = label;
+  } catch (e) {
+    console.error('updateWalletNetworkLabel failed', e);
+    el.textContent = 'Wallet: unknown network';
+  }
+}
 async function toggleNetwork(){
   CURRENT_NETWORK = (CURRENT_NETWORK === 'mainnet') ? 'testnet' : 'mainnet';
   applyNetworkUI();
@@ -1369,7 +1399,6 @@ async function ensureBase(){
     }
   }
 }
-
 async function connect(){
   try{
     await ensureBase();
@@ -1390,10 +1419,49 @@ async function connect(){
     if (netChip) netChip.classList.add('badge');
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
+    updateWalletNetworkLabel();
   }catch(e){
     console.error('connect() failed', e);
     $('sbState').textContent = 'Not connected';
     $('sbState').classList.remove('ok');
+    const w = $('sbWalletNet');
+    if (w) w.textContent = 'Wallet: not connected';
+  }
+}
+async function ensureWalletOnChain(wcProvider, chainId) {
+  const chainIdHex = chainId === 8453 ? '0x2105' : '0x14a33'; // 8453 / 84532
+  const isMainnet = chainId === 8453;
+
+  try {
+    // Ask wallet to switch
+    await wcProvider.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: chainIdHex }]
+    });
+  } catch (err) {
+    // 4902 = chain not added yet → add it
+    const code = err.code || (err.data && err.data.originalError && err.data.originalError.code);
+    if (code === 4902) {
+      await wcProvider.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: chainIdHex,
+          chainName: isMainnet ? 'Base Mainnet' : 'Base Sepolia',
+          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+          rpcUrls: [isMainnet ? 'https://mainnet.base.org' : 'https://sepolia.base.org'],
+          blockExplorerUrls: [isMainnet ? 'https://basescan.org' : 'https://sepolia.basescan.org']
+        }]
+      });
+    } else {
+      console.error('wallet_switchEthereumChain failed', err);
+      throw err;
+    }
+  }
+
+  // Final sanity check
+  const walletChainHex = await wcProvider.request({ method: 'eth_chainId' });
+  if (walletChainHex.toLowerCase() !== chainIdHex) {
+    throw new Error(`Wallet still not on expected chain ${chainIdHex}, got ${walletChainHex}`);
   }
 }
 async function connectWithWalletConnect() {
@@ -1403,74 +1471,59 @@ async function connectWithWalletConnect() {
       return;
     }
 
-    const net = currentBase();              // mainnet or testnet
+    const net = currentBase();              // 'mainnet' or 'testnet'
     const chainId = net.key === 'mainnet' ? 8453 : 84532;
 
-    // UMD build exposes a module object under "@walletconnect/ethereum-provider"
-    const globalWC =
-      window['@walletconnect/ethereum-provider'] ||
-      window.WalletConnectEthereumProvider ||
-      window.EthereumProvider ||
-      window.ethereumProvider;
-
-    const EthereumProvider =
-      globalWC?.EthereumProvider ||
-      globalWC?.default ||
-      globalWC;
+    // UMD global from the script tag
+    const wcModule = window['@walletconnect/ethereum-provider'] || window.WalletConnectEthereumProvider;
+    const EthereumProvider = wcModule?.EthereumProvider || wcModule?.default || wcModule;
 
     if (!EthereumProvider || !EthereumProvider.init) {
-      console.error('WalletConnect global missing or invalid:', globalWC);
+      console.error('WalletConnect provider not found.', wcModule);
       alert('WalletConnect library failed to load. Check the <script> tag in <head>.');
       return;
     }
 
-    // Initialize WalletConnect v2
+    // 1) Initialize WC and show QR
     wcProvider = await EthereumProvider.init({
       projectId: WC_PROJECT_ID,
       chains: [chainId],
       showQrModal: true,
       metadata: {
         name: 'The Juice',
-        description: 'Peer-to-peer crypto escrow challenges',
+        description: 'Peer-to-peer crypto escrow challenges on Base',
         url: window.location.origin,
         icons: [window.location.origin + '/favicon.png'],
       },
     });
 
+    // 2) Wait for user to connect
     await wcProvider.connect();
 
-    // 🔒 Safety: verify wallet network matches app network
-    const walletChainHex = await wcProvider.request({ method: 'eth_chainId' });
-    const expectedHex = chainId === 8453 ? '0x2105' : '0x14a33'; // 8453 / 84532 in hex
+    // 3) Auto-switch wallet network to match app (Base mainnet / Sepolia)
+    await ensureWalletOnChain(wcProvider, chainId);
 
-    if (walletChainHex !== expectedHex) {
-      alert(
-        `Wallet is on the wrong network.\n\n` +
-        `Wallet: chainId ${walletChainHex}\n` +
-        `App expects: ${chainId === 8453 ? 'Base Mainnet (8453)' : 'Base Sepolia (84532)'}.\n\n` +
-        `Switch networks in your wallet and reconnect.`
-      );
-
-      $('sbState').textContent = 'Wrong network (WalletConnect)';
-      $('sbState').classList.remove('ok');
-      $('btnConnect').classList.remove('connected');
-
-      // Do NOT set provider/signer – refuse to use this session
-      wcProvider = null;
-      return;
-    }
-
-    // Wrap with ethers v6
+    // 4) Wrap with ethers v6
     provider = new ethers.BrowserProvider(wcProvider);
     signer   = await provider.getSigner();
 
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
+    updateWalletNetworkLabel();
+
+
+    applyNetworkUI();
   } catch (e) {
     console.error('WalletConnect failed', e);
     $('sbState').textContent = 'WalletConnect failed or canceled';
     $('sbState').classList.remove('ok');
+    const w = $('sbWalletNet');
+    if (w) w.textContent = 'Wallet: not connected';
+    if (wcProvider) {
+      // if switching failed etc, don't leave a half-broken session
+      wcProvider = null;
+    }
   }
 }
 function getContract(){
