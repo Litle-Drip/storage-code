@@ -823,6 +823,11 @@
   .stake-adjust{
     margin-right:0;
   }
+  /* Reset auto margins for stake controls on mobile */
+  .stake-adjust,
+  .stake-toggle{
+    margin-left: 0;
+  }
 
   /* ETH / USD buttons can sit side-by-side and shrink if needed */
   .stake-toggle{
@@ -837,21 +842,25 @@
     max-width:120px;
   }
 
-  .site-footer{
-    flex-direction:column;
-    align-items:flex-start;
-    text-align:left;
-    padding:14px 16px;
-    margin:24px auto 32px;
+    .site-footer{
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    padding: 14px 16px;
+    margin: 24px auto 32px;
   }
 
   .site-footer nav{
-    justify-content:flex-start;
+    display: flex;
+    flex-direction: column;   /* one link per line */
+    align-items: flex-start;
+    gap: 4px;
   }
 
   .site-footer a{
-    margin:0;
+    margin: 0;
   }
+
 }
 
   </style>
