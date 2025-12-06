@@ -387,24 +387,36 @@
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:12px;
+  gap:8px;
 
-  /* Wider box so amount fits cleanly */
-  width:260px;
+  /* much tighter, matches 1.5 quick buttons */
+  width:185px;
 
-  padding:14px 18px;
-  background:#1a1a1d;
+  padding:10px 12px;
+  border:1px solid #1FC76C;
   border:1px solid #2a2a2f;
-  border-radius:22px;
+  border-radius:18px;
 
-  box-shadow:0 2px 8px rgba(0,0,0,0.35);
+  box-shadow:0 2px 6px rgba(0,0,0,0.28);
 }
 
 /* Symbol inside the box */
 .stake-box .stake-symbol{
-  font-size:34px;
+  font-size:26px;     /* smaller to fit new box */
   color:#e4e4e7;
   flex-shrink:0;
+}
+
+/* Amount inside the box */
+.stake-box .stake-amount{
+  width:90px;         /* reduced to fit tighter box */
+  max-width:90px;
+  font-size:34px;     /* smaller font to prevent overflow */
+  text-align:center;
+  background:transparent;
+  border:none;
+  color:#f9fafb;
+  line-height:1.1;
 }
 
 /* Amount inside the box */
