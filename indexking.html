@@ -381,6 +381,36 @@
       letter-spacing:-0.02em;
       line-height:1.05;
     }
+    /* Box around $ and amount */
+.stake-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+
+  /* Match width of two quick chips ($1 + $5) */
+  width:240px;                     /* adjust if needed */
+
+  padding:12px 16px;
+  background:#1a1a1d;
+  border:1px solid #1FC76C;
+  border-radius:20px;
+
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Improve alignment inside the box */
+.stake-box .stake-symbol{
+  font-size:32px;
+  color:#e4e4e7;
+}
+
+.stake-box .stake-amount{
+  width:100px;     /* fits nicely inside the box */
+  font-size:48px;
+  text-align:center;
+}
+
     .stake-toggle{
       display:flex;
       flex-direction:column;
@@ -467,8 +497,8 @@
     .stake-adjust{
       display:flex;
       flex-direction:column;
-      gap:6px;
-      margin-left:12px;
+      gap:8px;
+      margin-right:16px;
     }
     .adjust-btn{
       border-radius:12px;
@@ -774,8 +804,10 @@
       <div class="stake-area">
         <div class="stake-label">Challenge Amount</div>
         <div class="stake-main">
-          <span id="stakeSymbol" class="stake-symbol">$</span>
-          <input id="stakeMain" class="stake-amount" type="number" value="5" />
+  <div class="stake-box">
+  <span id="stakeSymbol" class="stake-symbol">$</span>
+  <input id="stakeMain" class="stake-amount" type="number" value="5" />
+</div>
 
           <div class="stake-adjust">
             <button id="ethMinus" class="adjust-btn">−</button>
