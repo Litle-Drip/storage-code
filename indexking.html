@@ -381,6 +381,15 @@
       letter-spacing:-0.02em;
       line-height:1.05;
     }
+        /* Hide number input arrows (all browsers) */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+    input[type="number"]{
+      -moz-appearance:textfield;
+    }
 
         /* Box around $/Ξ and stake amount */
     .stake-box{
@@ -739,6 +748,22 @@
         text-align:left;
         padding:14px 16px;
         margin:24px auto 32px;
+        /* Fix stake box sizing on mobile */
+      .stake-box {
+        width: 200px;              /* shrink entire box */
+        padding: 8px 10px;
+      }
+
+      .stake-box .stake-symbol {
+        font-size: 22px;           /* smaller symbol */
+      }
+
+      .stake-box .stake-amount {
+        width: 90px !important;    /* reduce input width */
+        max-width: 90px !important;
+        font-size: 26px !important; /* shrink number text */
+      }
+
       }
       .site-footer nav{
         justify-content:flex-start;
