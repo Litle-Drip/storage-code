@@ -153,6 +153,13 @@
       border-color:var(--accent);
       color:var(--accent);
     }
+    /* When the wallet is actually on this network, highlight the network chip */
+    .chip.network-active{
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,234,255,0.12);
+      box-shadow: 0 0 12px rgba(0,234,255,0.35);
+    }
     .chip a{
       color:inherit;
       text-decoration:none;
@@ -1131,6 +1138,7 @@ function applyNetworkUI(){
     switchBtn.textContent = (CURRENT_NETWORK === 'mainnet')
       ? 'Use Base Sepolia'
       : 'Use Base Mainnet';
+  updateWalletNetworkLabel();
   }
 }
 async function updateWalletNetworkLabel() {
@@ -1156,8 +1164,23 @@ async function updateWalletNetworkLabel() {
     }
 
     el.textContent = label;
+    // Highlight active network chip when wallet matches app network
+    const chipTop = $('chipNetwork');
+    const chipBottom = $('chipNetworkBottom');
+    chipTop?.classList.remove('network-active');
+    chipBottom?.classList.remove('network-active');
+
+    if (chainId === 8453 && CURRENT_NETWORK === 'mainnet') {
+      chipTop?.classList.add('network-active');
+      chipBottom?.classList.add('network-active');
+    }
+
+    if (chainId === 84532 && CURRENT_NETWORK === 'testnet') {
+      chipTop?.classList.add('network-active');
+      chipBottom?.classList.add('network-active');
+    }
   } catch (e) {
-    console.error('updateWalletNetworkLabel failed', e);
+   console.error('updateWalletNetworkLabel failed', e);
     el.textContent = 'Wallet: unknown network';
   }
 }
@@ -1487,6 +1510,7 @@ async function connect(){
     signer = await provider.getSigner();
 
     $('sbState').textContent = 'Connected';
+    updateWalletNetworkLabel();
     const netChip = $('chipNetwork');
     if (netChip) netChip.classList.add('badge');
     $('sbState').classList.add('ok');
