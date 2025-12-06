@@ -13,7 +13,7 @@
   <!-- WalletConnect (Required for the UGLY logic to work) -->
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.10.0/dist/index.umd.js"></script>
 
-  <!-- Styles (From Final Code) -->
+  <!-- Styles -->
   <style>
     :root{
       --bg:#050608;
@@ -34,7 +34,8 @@
     html,body{height:100%}
     body{
       margin:0;
-      background:#000;
+      /* Applied the radial gradient from the 'other' screenshot */
+      background:radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
       color:var(--text);
       font:500 var(--fs)/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
@@ -200,6 +201,16 @@
       align-items:center;
     }
 
+    /* Warning below status */
+    .network-warning-bar {
+      margin: 8px auto 8px; /* Reduced top/bottom margin */
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 16px;
+      text-align: center;
+      max-width: 520px;
+    }
+
     /* Tabs */
     .tabs{
       display:flex;
@@ -260,6 +271,12 @@
       color:var(--muted);
       text-align:center;
       margin-bottom:14px;
+    }
+    /* Centering specific for the resolve note */
+    #resolveNote {
+      text-align: center;
+      width: 100%;
+      margin-bottom: 20px; /* Add breathing room below it since top space is removed */
     }
 
     .label{
@@ -698,14 +715,15 @@
     </div>
   </div>
 
+  <!-- NETWORK WARNING MOVED UP, REDUCING MARGIN -->
+  <div id="networkWarning" class="network-warning-bar">
+    ⚠️ Base Mainnet — Real ETH. Start with small stakes.
+  </div>
+
   <!-- Tabs -->
   <div class="tabs">
     <button id="tabCreate" class="tab active">Create Challenge</button>
     <button id="tabJoin" class="tab">Join &amp; Resolve</button>
-  </div>
-
-  <div id="networkWarning" class="help-line" style="margin-top:8px; max-width:520px; margin-left:auto; margin-right:auto;">
-    ⚠️ Base Mainnet — Real ETH. Start with small stakes.
   </div>
 
   <!-- Create panel -->
@@ -792,14 +810,11 @@
   <!-- Join / Resolve panel -->
   <div id="panelJoin" class="panel">
     <div class="card">
-      <div class="card-header"><div class="card-title"></div></div>
       <div id="resolveNote" class="card-sub">Paste a Challenge ID to join, refund, or finalize.</div>
 
       <!-- Challenge ID -->
       <div class="join-input-row row">
         <input id="betId" class="input join-input" placeholder="Paste Challenge ID…" />
-        <!-- UGLY logic doesn't have btnClearId by default, but we can add inline JS or just rely on manual clear. 
-             Ideally we use UGLY's 'btnNewBet' logic for clearing, but here is a visual clear button -->
         <button class="btn-clear" onclick="document.getElementById('betId').value=''">Clear</button>
       </div>
 
@@ -987,7 +1002,7 @@ function applyNetworkUI(){
   const switchBtn = $('btnSwitch');
   if (switchBtn){
     switchBtn.textContent = (CURRENT_NETWORK === 'mainnet')
-      ? 'Use Base Sepolia'
+      ? 'Use Base Sepolia (test)'
       : 'Use Base Mainnet';
   }
 }
@@ -1359,7 +1374,7 @@ async function connect(){
   }
 }
 async function ensureWalletOnChain(wcProvider, chainId) {
-  const chainIdHex = chainId === 8453 ? '0x2105' : '0x14a33'; // 8453 / 84532
+  const chainIdHex = chainId === 8453 ? '0x2105' : '0x14a34'; // 8453 / 84532
   const isMainnet = chainId === 8453;
 
   try {
