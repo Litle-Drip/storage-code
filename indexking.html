@@ -741,6 +741,25 @@
     }
     .site-footer a:hover{text-decoration:underline}
     @media(max-width:640px){
+  /* Mobile header clean-up */
+  .topbar{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+
+  .top-actions{
+    width:100%;
+    flex-direction:column;      /* stack buttons */
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .top-actions .btn{
+    width:100%;                 /* all same width */
+    justify-content:center;     /* center labels */
+  }
+
   .app{
     padding:14px 12px 28px;
   }
