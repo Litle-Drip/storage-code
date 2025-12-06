@@ -353,9 +353,14 @@
     .stake-main{
       display:flex;
       align-items:center;
-      justify-content:center;
-      gap:16px;
+      justify-content:flex-start;
+      gap:24px;
       margin:16px 0 10px;
+    }
+        /* Push adjust buttons + ETH/USD to the right */
+    .stake-adjust,
+    .stake-toggle{
+      margin-left:auto;
     }
     .stake-symbol{
       font-size:32px;
@@ -379,24 +384,28 @@
     .stake-toggle{
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:6px;
     }
+
+    /* Make ETH & USD same width */
     .stake-toggle button{
+      width:82px;                /* NEW: equal width */
+      text-align:center;
       background:#26262a;
       border-radius:10px;
       border:1px solid #26262a;
-      padding:6px 12px;
+      padding:6px 0;
       font-size:11px;
       font-weight:700;
       color:#e4e4e7;
       cursor:pointer;
     }
+
     .stake-toggle button.connected{
       border:2px solid #18DCF1;
       background:#111827;
       color:#f9fafb;
     }
-
     /* Quick Row */
     .quick-row{
       display:grid;
