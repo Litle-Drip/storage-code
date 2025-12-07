@@ -765,18 +765,35 @@
     .card{
       padding:16px;
     }
+    /* One-line layout for network / fee / contract chips on mobile */
+    .subbar{
+      padding:0 8px;
+    }
+
     .subchips{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .subchips .chip{
-      width:100%;
+      display:flex;
+      flex-direction:row;   /* all on one row */
+      flex-wrap:nowrap;     /* don't wrap */
+      align-items:center;
       justify-content:center;
-      margin-bottom:6px;
+      gap:6px;
     }
+
     .subchips-left{
-      width:100%;
-      flex-direction:column;
+      display:flex;
+      flex-direction:row;   /* row instead of column */
+      flex-wrap:nowrap;
+      align-items:center;
+      width:auto;           /* let content size itself */
+    }
+
+    .subchips .chip{
+      width:auto;           /* no full-width chips */
+      margin-bottom:0;
+      padding:4px 8px;      /* smaller for mobile */
+      font-size:10px;
+      white-space:nowrap;   /* keep labels on one line */
+      justify-content:center;
     }
     .quick-row{
       grid-template-columns:repeat(2,minmax(0,1fr));
