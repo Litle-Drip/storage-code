@@ -736,24 +736,26 @@
       flex-direction:row;
       align-items:center;
       justify-content:space-between;
-      gap:8px;
-      padding:0 12px;
+      gap:4px;
+      padding:0 8px;
+      width:100%;
     }
 
     .top-actions{
       display:flex;
       flex-direction:row;
-      flex-wrap:wrap;
+      flex-wrap:nowrap;   /* prevent wrapping */
       justify-content:flex-end;
       align-items:center;
       gap:6px;
-    width:auto;
+      width:auto;
     }  
 
     .top-actions .btn{
-      padding:4px 10px;
-      font-size:11px;
-      white-space:nowrap;
+      padding:3px 8px;     /* thinner buttons */
+      font-size:10px;      /* smaller text */
+      white-space:nowrap;  /* keep on one line */
+      flex-shrink:1;       /* allow buttons to shrink */
     }
 
     /* keep the rest of your existing mobile rules below this */
