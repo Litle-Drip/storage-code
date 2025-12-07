@@ -195,6 +195,11 @@
       overflow:hidden;
       text-overflow:ellipsis;
       text-align:center;
+
+      /* NEW — clickable link styling */
+      color:#ffffff !important;
+      text-decoration:none !important;
+      cursor:pointer;
     }
     .subchips{
       display:flex;
@@ -845,11 +850,16 @@
         /* Smaller, multiline contract pill on mobile */
     .addr{
       font-size:10px;
-      white-space:normal;      /* allow wrap */
-      overflow:visible;        /* no clipping */
-      text-overflow:clip;      /* no ellipsis */
+      white-space:normal;
+      overflow:visible;
+      text-overflow:clip;
       line-height:1.3;
       padding:6px 10px;
+
+      /* NEW — clickable link styling */
+      color:#ffffff !important;
+      text-decoration:none !important;
+      cursor:pointer;
     }
 
     /* keep the rest of your existing mobile rules below this */
