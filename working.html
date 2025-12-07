@@ -759,6 +759,62 @@
       color:#000000 !important;
       border-color:var(--accent) !important; /* BLUE on focus */
     }
+    /* ---------- ERROR MODAL ---------- */
+    .error-modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:40;
+    }
+    .error-modal.visible{
+      display:flex;
+    }
+    .error-modal-backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+    }
+    .error-modal-card{
+      position:relative;
+      max-width:360px;
+      width:90%;
+      background:var(--card);
+      border-radius:20px;
+      border:1px solid var(--border);
+      box-shadow:0 20px 60px rgba(0,0,0,.7);
+      padding:18px 18px 16px;
+      z-index:41;
+    }
+    .error-modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+    .error-modal-close{
+      border:none;
+      background:transparent;
+      color:var(--muted);
+      cursor:pointer;
+      font-size:16px;
+      padding:2px 4px;
+    }
+    .error-modal-close:hover{
+      color:var(--text);
+    }
+    .error-modal-body{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.4;
+      white-space:pre-wrap;
+      word-break:break-word;
+      margin-top:4px;
+    }
+/* ---------- END MODAL ---------- */
+
     @media(max-width:640px){
         /* HEADER LAYOUT ON MOBILE */
     .topbar{
@@ -1115,7 +1171,7 @@
     <div class="help-line">Refunds are fee-free if deadlines pass.</div>
   </div>
 
-  <footer class="site-footer">
+    <footer class="site-footer">
     <div>© <span id="yearNow"></span> The Juice Labs</div>
     <nav>
       <a href="terms.html">Terms</a>
@@ -1123,6 +1179,26 @@
       <a href="risk.html">Risk</a>
     </nav>
   </footer>
+
+  <!-- Error modal -->
+  <div id="errorModal" class="error-modal">
+    <div class="error-modal-backdrop" onclick="closeErrorModal()"></div>
+    <div class="error-modal-card">
+      <div class="error-modal-header">
+        <span>Error</span>
+        <button type="button"
+                class="error-modal-close"
+                onclick="closeErrorModal()">✕</button>
+      </div>
+      <div id="errorModalMessage" class="error-modal-body"></div>
+      <button type="button"
+              class="btn accent"
+              style="width:100%;margin-top:12px"
+              onclick="closeErrorModal()">
+        Got it
+      </button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1263,6 +1339,32 @@ async function toggleNetwork(){
 /* ---------- Shortcuts ---------- */
 const $ = id => document.getElementById(id);
 const fmtUsd = v => '$' + v.toFixed(2);
+
+/* ---------- Error modal helpers ---------- */
+function openErrorModal(message){
+  const modal = $('errorModal');
+  const msgEl = $('errorModalMessage');
+  if (!modal || !msgEl) return;
+
+  msgEl.textContent = message;
+  modal.classList.add('visible');
+}
+
+function closeErrorModal(){
+  const modal = $('errorModal');
+  if (modal) modal.classList.remove('visible');
+}
+
+/**
+ * Show an error in the inline status area AND in the popup.
+ * targetId is "createStatus" or "actionStatus".
+ */
+function showError(message, targetId){
+  if (targetId && $(targetId)){
+    $(targetId).textContent = message;
+  }
+  openErrorModal(message);
+}
 
 /* ---------- Fill header contract pill ---------- */
 $('addrPill').textContent = `Verified Contract: ${currentContract()}`;
@@ -1697,7 +1799,7 @@ async function doCreate(){
     if(tabJoin) tabJoin.click();
   }catch(e){
     console.error('createBet error',e);
-    $('createStatus').textContent = '❌ ' + (e?.shortMessage || e?.message || e);
+    showError('❌ ' + (e?.shortMessage || e?.message || e), 'createStatus');
   }
 }
 
@@ -1711,14 +1813,14 @@ async function doJoin(){
 
     const b = await c.getChallenge(betId);
     if(b[0]===ethers.ZeroAddress){
-      $('actionStatus').textContent = '❌ Challenge not found';
+      showError('❌ Challenge not found', 'actionStatus');
       return;
     }
 
     const stakeWei = b[2];
     const state = Number(b[7]);
     if(state!==0){
-      $('actionStatus').textContent = '❌ Challenge is not open to join';
+      showError('❌ Challenge is not open to join', 'actionStatus');
       return;
     }
 
@@ -1727,7 +1829,7 @@ async function doJoin(){
     $('lastTx').href = `${currentBase().explorer}/tx/${tx.hash}`;
     $('actionStatus').textContent = '✅ Joined challenge';
   }catch(e){
-    $('actionStatus').textContent = '❌ ' + (e?.shortMessage || e?.message || e);
+    showError('❌ ' + (e?.shortMessage || e?.message || e), 'actionStatus');
   }
 }
 
@@ -1741,7 +1843,7 @@ async function doJoin(){
 
     const b = await c.getChallenge(betId);
     if (b[0] === ethers.ZeroAddress){
-      $('actionStatus').textContent = '❌ Challenge not found';
+      showError('❌ Challenge not found', 'actionStatus');
       return;
     }
 
@@ -1751,7 +1853,7 @@ async function doJoin(){
     const opponent = b[1].toLowerCase();
 
     if (caller !== creator && caller !== opponent){
-      $('actionStatus').textContent = '❌ You are not part of this challenge';
+      showError('❌ You are not part of this challenge', 'actionStatus');
       return;
     }
 
@@ -1784,7 +1886,7 @@ async function doRefund(){
 
     const b = await c.getChallenge(betId);
     if(b[0]===ethers.ZeroAddress){
-      $('actionStatus').textContent = '❌ Challenge not found';
+      showError('❌ Challenge not found', 'actionStatus');
       return;
     }
 
@@ -1804,7 +1906,7 @@ async function doRefund(){
     const canSplitRefund = (state===1 && votesMismatch && now>resolveDeadline);
 
     if(!canSoloRefund && !canSplitRefund){
-      $('actionStatus').textContent = '❌ Refund not available yet for this challenge';
+      showError('❌ Refund not available yet for this challenge', 'actionStatus');
       return;
     }
 
@@ -1827,7 +1929,7 @@ async function doPayout(){
     const b = await c.getChallenge(betId);
 
     if(b[0]===ethers.ZeroAddress){
-      $('actionStatus').textContent = '❌ Challenge not found';
+      showError('❌ Challenge not found', 'actionStatus');
       return;
     }
 
@@ -1836,7 +1938,7 @@ async function doPayout(){
     const opponentVote = Number(b[9]);
 
     if(state!==1){
-      $('actionStatus').textContent = '❌ Challenge is not in a resolvable state';
+      showError('❌ Challenge is not in a resolvable state', 'actionStatus');
       return;
     }
 
@@ -1844,7 +1946,7 @@ async function doPayout(){
     const votesMatch = votesSet && (creatorVote===opponentVote);
 
     if(!votesMatch){
-      $('actionStatus').textContent = '❌ Both sides must vote and agree before payout';
+      showError('❌ Both sides must vote and agree before payout', 'actionStatus');
       return;
     }
 
