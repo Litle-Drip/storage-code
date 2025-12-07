@@ -760,12 +760,12 @@
       border-color:var(--accent) !important; /* BLUE on focus */
     }
     @media(max-width:640px){
-    /* HEADER LAYOUT ON MOBILE */
+        /* HEADER LAYOUT ON MOBILE */
     .topbar{
-      flex-direction:row;
-      align-items:center;
-      justify-content:space-between;
-      gap:4px;
+      flex-direction:column;
+      align-items:flex-start;
+      justify-content:flex-start;
+      gap:6px;
       padding:0 8px;
       width:100%;
     }
@@ -773,22 +773,27 @@
     .top-actions{
       display:flex;
       flex-direction:row;
-      flex-wrap:nowrap;   /* prevent wrapping */
-      justify-content:flex-end;
+      flex-wrap:wrap;        /* allow a clean wrap if needed */
+      justify-content:flex-start;
       align-items:center;
       gap:6px;
-      width:auto;
-    }  
+      width:100%;
+    }
 
     .top-actions .btn{
-      padding:3px 8px;     /* thinner buttons */
-      font-size:10px;      /* smaller text */
-      white-space:nowrap;  /* keep on one line */
-      flex-shrink:1;       /* allow buttons to shrink */
+      padding:4px 10px;
+      font-size:11px;
+      white-space:nowrap;
+      flex-shrink:1;
     }
-    .top-actions .btn{
+        /* Smaller, multiline contract pill on mobile */
+    .addr{
+      font-size:10px;
+      white-space:normal;      /* allow wrap */
+      overflow:visible;        /* no clipping */
+      text-overflow:clip;      /* no ellipsis */
+      line-height:1.3;
       padding:6px 10px;
-      font-size:12px;
     }
 
     /* keep the rest of your existing mobile rules below this */
@@ -890,7 +895,6 @@
       margin:0;
     }
   }
-    }
   </style>
 </head>
 <body>
