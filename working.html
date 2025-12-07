@@ -29,6 +29,7 @@
       --chip:#111114;
       --radius:18px;
       --fs:16px;
+      --accent-green:#16a34a; /* same green you already use */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -717,6 +718,18 @@
       font-size:11px;
     }
     .site-footer a:hover{text-decoration:underline}
+        /* Highlighted deadline inputs (15 and 30) */
+    .deadline-highlight{
+      background:#ffffff !important;          /* white */
+      color:#000000 !important;               /* black text */
+      border:2px solid var(--accent-green) !important;
+      border-radius:40px !important;
+    }
+    .deadline-highlight:focus{
+      background:#ffffff !important;
+      color:#000000 !important;
+      border-color:var(--accent-green) !important;
+    }
 
     @media(max-width:640px){
       .topbar{
@@ -814,21 +827,7 @@
       .site-footer a{
         margin:0;
       }
-
-      /* Highlighted deadline inputs (15 and 30) */
-      .deadline-highlight {
-        background: #ffffff !important;     /* white */
-        color: #000000 !important;          /* black text */
-        border: 2px solid var(--accent-green) !important; /* theme green */
-        border-radius: 40px !important;     /* match your chips */
-      }
-
-      /* Keep styling on focus */
-      .deadline-highlight:focus {
-        background: #ffffff !important;
-        border-color: var(--accent-green) !important;
-        color: #000000 !important;
-      }
+    }
   </style>
 </head>
 <body>
@@ -922,7 +921,14 @@
             <button class="quick-chip" data-join="15">15m</button>
             <button class="quick-chip" data-join="60">1h</button>
             <button class="quick-chip" data-join="1440">1 Day</button>
-            <input id="joinMins" class="input deadline-input deadline-highlight" ... value="15"/>
+             <input
+              id="joinMins"
+              class="input deadline-input deadline-highlight"
+              type="number"
+              min="1"
+              max="43200"
+              value="15"
+            />
           </div>
         </div>
       </div>
@@ -935,7 +941,14 @@
             <button class="quick-chip" data-resolve="30">+30m</button>
             <button class="quick-chip" data-resolve="120">+2h</button>
             <button class="quick-chip" data-resolve="2880">+2 Days</button>
-            <input id="resolveMins" class="input deadline-input deadline-highlight" ... value="30"/>
+            <input
+              id="resolveMins"
+              class="input deadline-input deadline-highlight"
+              type="number"
+              min="30"
+              max="43200"
+              value="30"
+            />
           </div>
         </div>
       </div>
