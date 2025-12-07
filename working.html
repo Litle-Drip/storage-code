@@ -955,29 +955,21 @@
         <button id="btnRefund" class="btn ghost" style="width:100%">Request Refund</button>
       </div>
 
-      <!-- Resolve winner -->
+            <!-- Resolve winner -->
       <div class="resolve-section">
         <div class="resolve-title">Resolve winner</div>
-        <div class="resolve-sub">Both sides choose the winner. If they match, payout is automatic.</div>
-
-        <div class="vote-grid">
-          <div>
-            <div class="vote-column-title">I created this Challenge</div>
-            <div class="vote-buttons">
-              <button id="creatorWon" class="btn ghost">I Won</button>
-              <button id="creatorSaysOpponent" class="btn ghost">Opponent Won</button>
-            </div>
-          </div>
-          <div>
-            <div class="vote-column-title">I joined this Challenge</div>
-            <div class="vote-buttons">
-              <button id="opponentSaysCreator" class="btn ghost">Creator Won</button>
-              <button id="opponentWon" class="btn ghost">I Won</button>
-            </div>
-          </div>
+        <div class="resolve-sub">
+          Each player only sees their own vote. If both pick the same winner, payout is automatic.
         </div>
 
-        <button id="btnPayout" class="btn accent" style="width:100%;margin-top:6px">Finalize &amp; Payout</button>
+        <div class="vote-buttons">
+          <button id="btnIWon" class="btn ghost" style="width:100%">I Won</button>
+          <button id="btnILost" class="btn ghost" style="width:100%">Opponent Won</button>
+        </div>
+
+        <button id="btnPayout" class="btn accent" style="width:100%;margin-top:6px">
+          Finalize &amp; Payout
+        </button>
       </div>
 
       <div id="actionStatus" class="status"></div>
@@ -1645,7 +1637,7 @@ async function doJoin(){
   }
 }
 
-async function doVote(creatorWon){
+  async function doVote(iWon){
   $('actionStatus').textContent = 'Sending…';
   try{
     await ensureBase();
@@ -1654,27 +1646,37 @@ async function doVote(creatorWon){
     const betId = requireBetId();
 
     const b = await c.getChallenge(betId);
-    if(b[0]===ethers.ZeroAddress){
+    if (b[0] === ethers.ZeroAddress){
       $('actionStatus').textContent = '❌ Challenge not found';
       return;
     }
 
-    const caller = await signer.getAddress();
-    const creator = b[0];
-    const opponent = b[1];
+    // Figure out who the caller is
+    const caller   = (await signer.getAddress()).toLowerCase();
+    const creator  = b[0].toLowerCase();
+    const opponent = b[1].toLowerCase();
 
-    if(caller.toLowerCase()!==creator.toLowerCase() &&
-       caller.toLowerCase()!==opponent.toLowerCase()){
+    if (caller !== creator && caller !== opponent){
       $('actionStatus').textContent = '❌ You are not part of this challenge';
       return;
     }
 
-    const tx = await c.submitOutcomeVote(betId,creatorWon);
+    // Convert "I won" into the contract's "creatorWon" flag
+    // - If caller IS the creator, iWon === true  -> creatorWon = true
+    // - If caller IS the opponent, iWon === true -> creatorWon = false
+    let creatorWon;
+    if (caller === creator){
+      creatorWon = !!iWon;
+    } else {
+      creatorWon = !iWon;
+    }
+
+    const tx = await c.submitOutcomeVote(betId, creatorWon);
     await tx.wait();
     $('lastTx').href = `${currentBase().explorer}/tx/${tx.hash}`;
     $('actionStatus').textContent = '✅ Vote submitted';
   }catch(e){
-    $('actionStatus').textContent = '❌ ' + (e?.shortMessage || e?.message || e);
+    $('actionStatus').textContent = '❌ ' + (e?.shortMessage||e?.message||e);
   }
 }
 
@@ -1818,10 +1820,11 @@ window.addEventListener('DOMContentLoaded',()=>{
   $('btnRefund').onclick = doRefund;
   $('btnPayout').onclick = doPayout;
 
-  $('creatorWon').onclick          = ()=>doVote(true);
-  $('creatorSaysOpponent').onclick = ()=>doVote(false);
-  $('opponentSaysCreator').onclick = ()=>doVote(true);
-  $('opponentWon').onclick         = ()=>doVote(false);
+    // Outcome voting: simple "I won" / "Opponent won" buttons
+  const btnIWon  = $('btnIWon');
+  const btnILost = $('btnILost');
+  if (btnIWon)  btnIWon.onclick  = ()=> doVote(true);   // I Won
+  if (btnILost) btnILost.onclick = ()=> doVote(false);  // Opponent Won
 
   $('btnShuffle').onclick = shuffleIdea;
 
