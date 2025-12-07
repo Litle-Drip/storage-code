@@ -1636,14 +1636,18 @@ async function connect(){
 
     provider = new ethers.BrowserProvider(eth);
     signer = await provider.getSigner();
-
     $('sbState').textContent = 'Connected';
     updateWalletNetworkLabel();
-    const netChip = $('chipNetwork');
-    if(netChip) netChip.classList.add('badge');
+
+    const netChipTop = $('chipNetwork');
+    const netChipBottom = $('chipNetworkBottom');
+    if(netChipTop) netChipTop.classList.add('badge');
+    if(netChipBottom) netChipBottom.classList.add('badge');
+
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
     updateWalletNetworkLabel();
+
   }catch(e){
     console.error('connect() failed',e);
     $('sbState').textContent = 'Not connected';
@@ -1727,8 +1731,15 @@ async function connectWithWalletConnect(){
     $('sbState').textContent = 'Connected (WalletConnect)';
     $('sbState').classList.add('ok');
     $('btnConnect').classList.add('connected');
+
+    const netChipTop = $('chipNetwork');
+    const netChipBottom = $('chipNetworkBottom');
+    if(netChipTop) netChipTop.classList.add('badge');
+    if(netChipBottom) netChipBottom.classList.add('badge');
+
     updateWalletNetworkLabel();
     applyNetworkUI();
+
   }catch(e){
     console.error('WalletConnect failed',e);
     $('sbState').textContent = 'WalletConnect failed or canceled';
