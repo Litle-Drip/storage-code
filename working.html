@@ -720,17 +720,16 @@
     .site-footer a:hover{text-decoration:underline}
         /* Highlighted deadline inputs (15 and 30) */
     .deadline-highlight{
-      background:#ffffff !important;          /* white */
-      color:#000000 !important;               /* black text */
-      border:2px solid var(--accent-green) !important;
+      background:#ffffff !important;  
+      color:#000000 !important;
+      border:2px solid var(--accent) !important; /* BLUE outline */
       border-radius:40px !important;
     }
     .deadline-highlight:focus{
       background:#ffffff !important;
       color:#000000 !important;
-      border-color:var(--accent-green) !important;
+      border-color:var(--accent) !important; /* BLUE on focus */
     }
-
     @media(max-width:640px){
       .topbar{
         flex-direction:column;
