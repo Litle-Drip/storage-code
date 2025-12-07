@@ -971,12 +971,16 @@
   </header>
 
   <div class="subbar">
-    <div id="addrPill" class="addr" title="Escrow contract address (locked)"></div>
+    <a id="addrPill"
+       class="addr"
+       title="View verified contract on Basescan"
+       target="_blank"
+       rel="noopener noreferrer">
+    </a>
     <div class="subchips">
       <div class="subchips-left">
         <span id="chipNetwork" class="chip">Base • Mainnet • (8453)</span>
         <span class="chip badge">Fee 2.5%</span>
-        <a id="verifiedLink" class="chip" href="#" target="_blank" rel="noopener noreferrer">Verified contract ↗</a>
       </div>
     </div>
   </div>
@@ -1269,10 +1273,10 @@ function applyNetworkUI(){
   if(warning) warning.textContent = net.warning;
 
   const addr = $('addrPill');
-  if(addr) addr.textContent = `Contract: ${currentContract()}`;
-
-  const link = document.getElementById('verifiedLink');
-  if(link) link.href = `${net.explorer}/address/${currentContract()}#code`;
+  if (addr) {
+    addr.textContent = `Contract: ${currentContract()}`;
+    addr.href = `${net.explorer}/address/${currentContract()}#code`;
+  }
 
   const switchBtn = $('btnSwitch');
   if(switchBtn){
